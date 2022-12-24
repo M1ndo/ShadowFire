@@ -1,0 +1,46 @@
+# Set to "on" to auto enable [tor,force_tcp,change mac] (Ignores previous specified options bellow) and force mac_reset to "off"
+# If Set to off it will mark [tor,force_tcp,change mac] as (off) and mac_reset to "on"
+# if set to null it will use the specified all the options below.
+# Default null is off
+# Options "on" or "off"
+export SS_ON=
+
+# Set Allowed Output/Input Ports to go via iptables
+# Set Ports, eg "9002,9001,9002"
+# if Set to null it will allow only port 9110
+export I_PORTS=
+
+# Force DNS (dnscrypt) requests to go via TCP then to Tor (It does increase latency and can be a bit slow)
+# Default null ignores both (on or off) if ("on" was previously specified it will remain "on" else "off")
+# Options "on" or "off" or ""
+FORCE_TCP="off"
+
+# Start Tor (on/off)
+# Set to "on" to start tor each time u run the script (If tor is started and is not configured it will configure it and restart it)
+# If set to "off" and FORCE_TCP to "on" it will force start tor
+# Default null is (on)
+export TOR_START="on"
+
+# Change Mac Address (on/off)
+# Default null is (off)
+export MAC_CHANGE="on"
+
+# Reset Mac Address if previously changed (on/off)
+# Default null is (off)
+export RESET_MAC="off"
+
+# Timezone Variable (Auto Set)
+TIME=
+
+# Timezone reset (on)
+# Set to on to reset timezone from utc to your default timezone 
+# Leave Empty to set timezone to utc
+export ZONE_RESET=
+
+# SYSCTL Tweaks (on/off)
+# Default null is (on)
+export SYSCTL_NET=
+
+# Iptables Rules (on/off)
+# Default null is (on)
+export UFW_SET=

@@ -1,0 +1,77 @@
+#+title: Shadowfire
+* General Information
+** Why this tool exists?
+I got tired of configuring/do things manually as it would've taken me at least 15-20min,
+so i wrote this script that will save me time and like 1-2min.
+** Use cases.
+- Bootable Live USB Arch based distro, can be anything but preferably
+  blackarch (Currently Broken 'glibc problem')
+  OR
+- A normal installed Arch based distro
+  OR
+- Setup a remote arch based distro to be used as a proxy ( still needs some tweaking )
+** What this tool does?
+It will automatically setup *dnscrypt* with [[https://github.com/DNSCrypt/dnscrypt-proxy][dnscrypt-proxy]] and use it.
+It will automatically setup *tor* with/without bridges and enable a socks5 proxy.
+It will automatically change timezone and change mac address.
+It will automatically setup iptables with ufw rules.
+This tool can also forces DNS traffic via tcp to be used with tor socks proxy.
+** What this tool doesn't do!
+This tool will not route your whole traffic to tor via a transparent proxy (WHY?).
+I don't want to route my whole traffic, which can be bad/annoying for certain reasons.
+And meanly i still want some stuff to go out without tor.
+You want full *anonymization* use *TOR-BROWSER*
+** When not to use this tool.
+Don't use this tool if you have no upper understanding of what it does ( But you can trust it ).
+Don't use this tool without knowing what configurations this tool does ( But you can trust it ).
+** Tips
+*DNSCRYPT-proxy* will use anon relays to pass dns queries to selected nameservers.
+When forcing DNS traffic via TCP it will use tor as proxy to route the traffic because tor doesn't support udp neither any proxy! (a more obfuscated way).
+When Iptables are set with UFW it will only allow input//output in port 9110 by default, you could change/add any ports in config file.
+PLEASE before start using tor proxy and do stupid shit mixing vpn's and proxies PLEASE referre to [[https://gitlab.torproject.org/legacy/trac/-/wikis/doc/TorPlusVPN][TorPlusX]] unless you wanna go to jail.
+AND inspect your traffic :).
+
+* Install/Setup
+** Configurations
+This script reads a configuration file that sets variables to allow for certain things.
+And or can read from the environment variables.
+Edit =my_setup= config to enable or disable functionalities of this script.
+** Dependencies
+All requirements are installed automatically, however for any other arch distro other than *blackarch*.
+Please install =secure-delete= from the *AUR*
+#+begin_src shell
+yay -S secure-delete
+#+end_src
+** Run
+The best way is to clone the repository, read the source, read the configurations, edit the config file.
+#+begin_src shell
+git clone --depth 1 https://github.com/M1ndo/ShadowFire && cd ShadowFire
+# Edit the config or use it like it is.
+sudo bash ./shadowfire.sh
+#+end_src
+*** One command
+=Enable ALL=
+One command to configure and start and enable (Force DNS via Tcp),(Start Tor),(Mac change),(Timezone Change),(Network Harden/Tweak),(Iptables Enable)
+#+begin_src shell
+# With Wget
+wget -q -O - <UR> | sudo SS_ON="on" bash
+# With Curl
+curl -s --output - <URL> | sudo SS_ON="on" bash
+#+end_src
+**** Extra
+***** Wipe Ram Cache
+#+begin_src shell
+sudo WIPE=1 ./shadowfire.sh
+#+end_src
+***** Suicide (Wipe And Shutdown)
+#+begin_src shell
+sudo END_ME=1 ./shadowfire.sh
+#+end_src
+***** Change Tor Bridges
+#+begin_src shell
+sudo BRID=1 ./shadowfire.sh
+#+end_src
+* Issues/TODO
+- [-] add support for debian/ubuntu? (i will if i got time)
+- [-] whats not an issue? add support to route whole traffic (probably not)
+- If there are any issues or errors, open an issue and describe it.
