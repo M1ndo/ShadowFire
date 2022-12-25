@@ -54,9 +54,9 @@ sudo bash ./shadowfire.sh
 One command to configure and start and enable (Force DNS via Tcp),(Start Tor),(Mac change),(Timezone Change),(Network Harden/Tweak),(Iptables Enable)
 #+begin_src shell
 # With Wget
-wget -q -O - <UR> | sudo SS_ON="on" bash
+wget -q -O - https://raw.githubusercontent.com/M1ndo/ShadowFire/main/shadowfire.sh | sudo SS_ON="on" bash
 # With Curl
-curl -s --output - <URL> | sudo SS_ON="on" bash
+curl -s --output - https://raw.githubusercontent.com/M1ndo/ShadowFire/main/shadowfire.sh | sudo SS_ON="on" bash
 #+end_src
 **** Extra
 ***** Wipe Ram Cache

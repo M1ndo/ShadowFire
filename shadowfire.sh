@@ -114,13 +114,12 @@ function dns_service() {
 function download_file() {
   curl_path=$(which curl 2>/dev/null)
   if [[ $curl_path != '' ]];then
-    echo curl --output $2 $1
-    curl --output $2 $1
+    curl -s --output $2 $1
   else
     if [ -e $2 ]; then
       rm $2
     fi
-    wget -O $2 $1 2>/dev/null || printf "$Red[!]$Normal Nor$Bold Wget$Normal or$Bold Curl$Normal Was found!\n";exit 1
+    wget -qO $2 $1 2>/dev/null || printf "$Red[!]$Normal Nor$Bold Wget$Normal or$Bold Curl$Normal Was found!\n";exit 1
   fi
 }
 
@@ -242,9 +241,7 @@ function tor_config() {
     change_bridges
   else
     printf "$Red[-]$Normal Not$Bold$Yellow2 Adding$Normal Bridges Skipping ...\n"
-    # sed -i "/UseBridges 1/d" $TORC_FILE
     sed -i "s/UseBridges 1/#UseBridges 1/g" $TORC_FILE
-    # sed -i "/ClientTransportPlugin obfs4 exec \/usr\/bin\/obfs4proxy managed/d" $TORC_FILE
     sed -i "s/ClientTransportPlugin obfs4 exec \/usr\/bin\/obfs4proxy managed/#ClientTransportPlugin obfs4 exec \/usr\/bin\/obfs4proxy managed/g" $TORC_FILE
   fi 
   printf "$Bold"
@@ -267,7 +264,6 @@ function wipe() {
 
 function check_require() {
   # Check if necessary packages are installed.
-  # progs=("tor" "torsocks" "obfs4proxy" "tor-browser" "dnscrypt-proxy" "secure-delete" "ufw") 
   progs=("tor" "torsocks" "obfs4proxy" "dnscrypt-proxy" "secure-delete" "ufw" "macchanger")
   optional=("nyx" "proxychains-ng")
   optional2=("Command line status monitor for tor" "Redirect traffic via proxy")
@@ -290,7 +286,8 @@ function check_require() {
   echo "|          Checking For Optional Packages             |"
   echo "|-----------------------------------------------------|" 
   for b in "${!optional[@]}"; do
-    if pacman -Qs ${optional[b]} >/dev/null; then
+    ch_pkg=$(pacman -Qk ${optional[b]} &>/dev/null)
+    if [[ $? -eq 0 ]]; then
       printf "$Purple[+]$Normal Package $Blue$Bold%s$Normal is$Green$Italic installed$Normal\n" "${optional[b]}"
     else
       printf "$Purple2[!]$Normal Package $Blue2$Bold%s$Normal :: $Bold%s$Normal is$Red$Italic not installed$Normal\n" "${optional[b]}" "${optional2[b]}"
