@@ -53,25 +53,6 @@ SYSCTL_NET=${SYSCTL_NET:-""}
 UFW_SET=${UFW_SET:-""}
 REF_C=${REF_C:-"-c germany,france,spain,portugal"}
 
-if [[ $SS_ON == "on" ]]; then
-  FORCE_TCP="on"
-  TOR_START="on"
-  MAC_CHANGE="on"
-  RESET_MAC="off"
-  SYSCTL_NET="on"
-  UFW_SET="on"
-elif [[ $SS_ON == "off" ]];then
-  FORCE_TCP="off"
-  TOR_START="off"
-  MAC_CHANGE="off"
-  RESET_MAC="on"
-  SYSCTL_NET="off"
-  UFW_SET="off"
-  ZONE_RESET="on"
-elif [[ $FORCE_TCP == "on" && $START_TOR == "off" || -z $START_TOR ]]; then
-  START_TOR="on"
-fi
-
 
 trap ctrl_c INT
 ctrl_c () {
@@ -89,7 +70,7 @@ function check_root() {
 
 function compatibility() { 
   DISTRO=$(pacman -h 2>/dev/null)
-  if [ -z ${DISTRO} ]; then
+  if [[ -z ${DISTRO} ]]; then
     printf "$Green[+]$Normal This Script is only compatible with$Purple Arch Based\n"
     exit 1;
   fi
@@ -287,7 +268,7 @@ function wipe() {
 function check_require() {
   # Check if necessary packages are installed.
   # progs=("tor" "torsocks" "obfs4proxy" "tor-browser" "dnscrypt-proxy" "secure-delete" "ufw") 
-  progs=("tor" "torsocks" "obfs4proxy" "dnscrypt-proxy" "secure-delete" "ufw") 
+  progs=("tor" "torsocks" "obfs4proxy" "dnscrypt-proxy" "secure-delete" "ufw" "macchanger")
   optional=("nyx" "proxychains-ng")
   optional2=("Command line status monitor for tor" "Redirect traffic via proxy")
   echo "|-----------------------------------------------------|"
@@ -301,7 +282,7 @@ function check_require() {
       touch $TEMP_FILE
       printf "$Red[!]$Normal Package $Blue$Bold$a$Normal is$Red$Italic not installed$Normal\n"
       printf "$Yellow[+]$Normal Installing $Purple$a$Normal\n"
-      pacman -S --noconfirm $a && if [ -f $TEMP_FILE ]; then rm $TEMP_FILE;fi
+      yes | pacman -S --noconfirm $a && if [ -f $TEMP_FILE ]; then rm $TEMP_FILE;fi
     fi
   done
   [ -f $TEMP_FILE ] && check_require && rm $TEMP_FILE
@@ -457,17 +438,19 @@ function sysctl_harden() {
 
 function timezone_c() { 
   cur_timezone=$(timedatectl show|head -1|awk -F= '{print $2}')
-  filename=$(grep -R 'mac_reset' . |awk -F: '{print $1}'|head -1)
+  filename="my_setup"
   printf "$Orange[-]$Normal$Bold TimeZone$Normal Settings.\n"
-  if [ -n "${ZONE_RESET}" ]; then
-    cur_timezone=$(grep "TIME=" $filename|awk -F= '{print $2}')
-    printf "$Yellow2[+]$Normal Reseting Current Timezone to$Bold %s$Normal\n" "${cur_timezone}"
-    timedatectl set-timezone $cur_timezone &>/dev/null
+  if [[ "${ZONE_RESET}" == "on" ]]; then
+    cur_timezone=$(grep "TIME=" "${filename}"|awk -F= '{print $2}')
+    if [[ -n "${cur_timezone}" ]]; then
+      printf "$Yellow2[+]$Normal Reseting Current Timezone to$Bold %s$Normal\n" "${cur_timezone}"
+      timedatectl set-timezone $cur_timezone &>/dev/null
+    fi
   else
     if [[ $cur_timezone != "UTC" ]]; then
-      sed -i "s,TIME=,TIME=${cur_timezone},g" $filename
-      printf "$Blue2[+]$Normal Changing$Bold$Yellow2 Timezone$Normal To$Mage2 UTC$Normal\n" "${cur_timezone}"
+      sed -i "s,TIME=.*$,TIME=${cur_timezone},g" $filename
       printf "$Green2[+]$Normal Backed Up Current TimeZone$Bold %s$Normal\n" "${cur_timezone}"
+      printf "$Blue2[+]$Normal Changing$Bold$Yellow2 Timezone$Normal To$Mage2 UTC$Normal\n" "${cur_timezone}"
       timedatectl set-timezone UTC
     fi
   fi
@@ -483,6 +466,24 @@ function started() {
   warning 
   printf "$Blue2[x]$Normal Reading Config, Doing Checks\n"
   if [ -f my_setup ]; then source my_setup; fi
+  if [[ $SS_ON == "on" ]]; then
+    FORCE_TCP="on"
+    TOR_START="on"
+    MAC_CHANGE="on"
+    RESET_MAC="off"
+    SYSCTL_NET="on"
+    UFW_SET="on"
+  elif [[ $SS_ON == "off" ]];then
+    FORCE_TCP="off"
+    TOR_START="off"
+    MAC_CHANGE="off"
+    RESET_MAC="on"
+    SYSCTL_NET="off"
+    UFW_SET="off"
+    ZONE_RESET="on"
+  elif [[ $FORCE_TCP == "on" && $START_TOR == "off" || -z $START_TOR ]]; then
+    START_TOR="on"
+  fi
   main
 }
 
@@ -506,10 +507,10 @@ function main() {
   if [[ -n $END_ME ]]; then kill_all;fi
   check_live
   compatibility
+  check_require
   mac_change
   timezone_c
   sysctl_harden
-  check_require
   dns_service
   tor_service
   force_tcp
